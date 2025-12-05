@@ -1,0 +1,7 @@
+//  1. install pg
+//  2. import Pool from Pool
+//  3. const pool = new Pool({
+    connection string=``
+})
+//create function of database
+//call function initDB()
