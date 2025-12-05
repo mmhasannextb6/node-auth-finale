@@ -58,15 +58,66 @@ app.get('/', (req:Request, res:Response) => {
 })
 
 
-app.post('/', (req:Request, res:Response) => {
-  console.log(req.body)
- res.status(200).json({
-  success:true,
-  message:'create successfully',
-  data:req.body
+app.post('/users', async(req:Request, res:Response) => {
+  const {name, email} = req.body
+  try{
+  const result = await pool.query(`INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`,[name, email]);
+ 
+//  console.log(result.rows[0])
+  return res.status(200).json({
+         success:true,
+         message:'data inserted',
+        data:result.rows[0]
  })
+  }catch(err){
+  res.status(200).json({
+  success:false,
+  message:'data not inserted',
+  data:err
+ })
+}
+
+ 
 })
 
-app.listen(process.env.port, () => {
+app.get("/users", async(req:Request, res:Response)=>{
+  try{
+    const result = await pool.query(`SELECT * FROM users`)
+    res.status(200).json({
+      success:true,
+      message:"data gets successfully",
+      data:result.rows
+    })
+  }catch(err:any){
+    res.status(500).json({
+      success:false,
+      message:"data not retrive",
+      details:err
+    })
+  }
+})
+
+app.get("/users/:id", async(req:Request, res:Response)=>{
+try{
+const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [req.params.id])
+if(result.rows.length===0){
+  throw new Error("user not found")
+}else{
+  res.status(200).send({
+  success:true,
+  message:'get single user successfully',
+  data:result.rows[0]
+})
+}
+}catch(err){
+  res.status(500).json({
+      success:false,
+      message:"Single data not retrive",
+      details:err
+    })
+}
+})
+
+app.listen(5000, () => {
   console.log(`Example app listening on port ${process.env.port}`)
 })
